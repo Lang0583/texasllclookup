@@ -8,4 +8,4 @@ Stack: Namecheap (domain/DNS) · GitHub Pages (hosting, built by GitHub Actions)
 - `generator/build.py <csv> <outdir>` – builds the site (city hubs, county hubs, guides indexable; business pages noindex), sitemap.xml, robots.txt, llms.txt, CNAME.
 - `.github/workflows/build-deploy.yml` – downloads data, builds, deploys to Pages on push and weekly. Raw data is never committed.
 
-Config at top of build.py: `SIGNUP_ENDPOINT` (GHL inbound-webhook or n8n URL), `GSC_META` (Search Console verification token).
+Signup: GoHighLevel embedded form (GHL_FORM in build.py).
