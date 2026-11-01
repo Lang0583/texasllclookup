@@ -1,0 +1,41 @@
+name: Build and deploy site
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 11 * * 1"   # weekly data refresh (Mon 05:00 America/Chicago)
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install pandas
+      - name: Download Comptroller Active Franchise Taxpayers (data.texas.gov 9cir-efmm)
+        run: |
+          mkdir -p data/parts
+          for i in 0 1 2 3 4 5 6 7 8; do
+            curl -sf --retry 5 -o data/parts/p$i.csv "https://data.texas.gov/resource/9cir-efmm.csv?\$limit=450000&\$offset=$((i*450000))&\$order=:id" &
+          done
+          wait
+          wc -l data/parts/*.csv
+      - run: python generator/normalize_api.py data/parts/p*.csv data/active_full.csv
+      - run: python generator/build.py data/active_full.csv site
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: site }
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: { name: github-pages, url: "${{ steps.d.outputs.page_url }}" }
+    steps:
+      - id: d
+        uses: actions/deploy-pages@v4
