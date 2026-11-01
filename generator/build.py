@@ -95,7 +95,9 @@ for c in topc:
          [faq(qa), {"@context":"https://schema.org","@type":"Dataset","name":f"Registered businesses in {c}, TX","isBasedOn":DSLD["isBasedOn"],"spatialCoverage":f"{c}, Texas"}], crumbitems=[("Home","/"),("Cities","/cities/"),(c,f"/tx/{cs}/")], city_attr=c)
 
 CN = {}
-for line in open(os.path.join(os.path.dirname(CSV),"tx_counties.txt")).read().splitlines()[1:]:
+_cf = os.path.join(os.path.dirname(os.path.abspath(__file__)),"tx_counties.txt")
+if not os.path.exists(_cf): _cf = os.path.join(os.path.dirname(CSV),"tx_counties.txt")
+for line in open(_cf).read().splitlines()[1:]:
     p=line.split("|"); CN[str((int(p[2])+1)//2)] = p[4]
 TX["county"] = TX["Taxpayer County Code"].str.lstrip("0").map(CN).fillna("")
 cc = TX[TX["county"]!=""]["county"].value_counts(); topk = cc[cc>=500].index
